@@ -1,0 +1,68 @@
+[
+  {
+    "id": "seed-1",
+    "name": "Shahr-e Sukhteh",
+    "score": 2680,
+    "clearTime": 34.2,
+    "heartsRemaining": 3,
+    "heightPercent": 100,
+    "victory": true,
+    "controlMode": "keyboard",
+    "createdAt": "2026-11-20T10:15:00.000Z"
+  },
+  {
+    "id": "seed-2",
+    "name": "Susa Curator",
+    "score": 2340,
+    "clearTime": 42.8,
+    "heartsRemaining": 2,
+    "heightPercent": 100,
+    "victory": true,
+    "controlMode": "webcam",
+    "createdAt": "2026-11-21T14:30:00.000Z"
+  },
+  {
+    "id": "run-1795552757959-xhej6",
+    "name": "Susa Visitor",
+    "score": 2150,
+    "clearTime": 46.3,
+    "heartsRemaining": 2,
+    "heightPercent": 100,
+    "victory": true,
+    "controlMode": "keyboard",
+    "createdAt": "2026-11-24T20:39:17.959Z"
+  },
+  {
+    "id": "seed-3",
+    "name": "Elamite Ibex",
+    "score": 1990,
+    "clearTime": 51.5,
+    "heartsRemaining": 2,
+    "heightPercent": 100,
+    "victory": true,
+    "controlMode": "keyboard",
+    "createdAt": "2026-11-22T09:05:00.000Z"
+  },
+  {
+    "id": "seed-4",
+    "name": "Gallery Visitor",
+    "score": 1420,
+    "clearTime": 38,
+    "heartsRemaining": 0,
+    "heightPercent": 78,
+    "victory": false,
+    "controlMode": "webcam",
+    "createdAt": "2026-11-23T16:45:00.000Z"
+  },
+  {
+    "id": "seed-5",
+    "name": "Clay Potter",
+    "score": 980,
+    "clearTime": 29.4,
+    "heartsRemaining": 0,
+    "heightPercent": 56,
+    "victory": false,
+    "controlMode": "keyboard",
+    "createdAt": "2026-11-24T08:20:00.000Z"
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "name": "Asoorika",
+  "description": "A museum prototype 2D platformer inspired by ancient clay pottery motifs. Jump above obstacles and headbutt evil spirits to reach the sacred tree leaf.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

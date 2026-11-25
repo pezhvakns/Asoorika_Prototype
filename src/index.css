@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Cinzel", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #1a120d;
+    color: #f6e4ce;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-text-shadow {
+  text-shadow: 0 2px 0 rgba(11, 13, 20, 0.9), 0 0 8px rgba(11, 13, 20, 0.55);
+}
+
+.pottery-grain {
+  background-image: radial-gradient(rgba(11, 13, 20, 0.08) 1px, transparent 0);
+  background-size: 16px 16px;
+}
