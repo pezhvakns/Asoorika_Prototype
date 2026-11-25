@@ -33,25 +33,53 @@ export function TitleScreen({
   leaderboardError,
 }: TitleScreenProps) {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const activeDiff = DIFFICULTY_CONFIGS[difficulty];
+
+  const handleCopyShareLink = async () => {
+    const shareUrl = window.location.href.split('?')[0];
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setLinkCopied(true);
+      window.setTimeout(() => setLinkCopied(false), 2200);
+    } catch {
+      const input = document.createElement('input');
+      input.value = shareUrl;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      document.body.removeChild(input);
+      setLinkCopied(true);
+      window.setTimeout(() => setLinkCopied(false), 2200);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-30 flex flex-col justify-between p-5 sm:p-8 bg-gradient-to-b from-[#1A120D]/42 via-[#1A120D]/12 to-[#1A120D]/48">
-      {/* Top bar: subtle museum exhibition label on left, Leaderboard toggle on right */}
+      {/* Top bar: subtle museum exhibition label on left, Share Link + Leaderboard toggle on right */}
       <div className="flex items-center justify-between gap-4">
         <span className="px-3 py-1.5 rounded-md bg-[#1A120D]/90 border border-[#5B3B24] text-xs font-mono tracking-wider text-[#F6E4CE]">
           Interactive Museum Prototype
         </span>
-        <button
-          type="button"
-          onClick={() => setShowLeaderboard((v) => !v)}
-          aria-expanded={showLeaderboard}
-          className="px-3.5 py-2 text-xs font-semibold rounded-md bg-[#1A120D]/92 border border-[#6E492D] text-[#F6E4CE] hover:bg-[#362317] transition-colors whitespace-nowrap shrink-0 cursor-pointer shadow-md"
-        >
-          {showLeaderboard
-            ? 'Hide High Scores'
-            : `High Scores (${entries.length})`}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleCopyShareLink}
+            className="px-3.5 py-2 text-xs font-semibold rounded-md bg-[#1A120D]/92 border border-[#6E492D] text-[#F6E4CE] hover:bg-[#362317] transition-colors whitespace-nowrap shrink-0 cursor-pointer shadow-md"
+          >
+            {linkCopied ? 'Link Copied!' : 'Share Link'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowLeaderboard((v) => !v)}
+            aria-expanded={showLeaderboard}
+            className="px-3.5 py-2 text-xs font-semibold rounded-md bg-[#1A120D]/92 border border-[#6E492D] text-[#F6E4CE] hover:bg-[#362317] transition-colors whitespace-nowrap shrink-0 cursor-pointer shadow-md"
+          >
+            {showLeaderboard
+              ? 'Hide High Scores'
+              : `High Scores (${entries.length})`}
+          </button>
+        </div>
       </div>
 
       {/* Main center focal stage */}
