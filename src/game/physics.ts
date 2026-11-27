@@ -20,36 +20,45 @@ export type DifficultyLevel = 'easy' | 'medium' | 'hard';
 export interface DifficultyConfig {
   id: DifficultyLevel;
   label: string;
+  gaitMode: 'walk' | 'run';
   speedMultiplierLabel: string;
   description: string;
   runSpeed: number;
   headbuttBoost: number;
+  /** World pixels traveled per animation frame so hooves stay locked to ground without sliding */
+  stridePerFrame: number;
 }
 
 export const DIFFICULTY_CONFIGS: Record<DifficultyLevel, DifficultyConfig> = {
   easy: {
     id: 'easy',
     label: 'Easy',
-    speedMultiplierLabel: '1.0×',
-    description: 'Steady pace for relaxed museum climbs',
-    runSpeed: 465,
-    headbuttBoost: 175,
+    gaitMode: 'walk',
+    speedMultiplierLabel: 'Walk',
+    description: 'Steady walking pace for relaxed museum climbs',
+    runSpeed: 340,
+    headbuttBoost: 150,
+    stridePerFrame: 34,
   },
   medium: {
     id: 'medium',
     label: 'Medium',
-    speedMultiplierLabel: '1.5×',
-    description: 'Brisk gallop with nimble jump timing',
-    runSpeed: 690,
+    gaitMode: 'run',
+    speedMultiplierLabel: 'Run',
+    description: 'Energetic ibex run with nimble jump timing',
+    runSpeed: 620,
     headbuttBoost: 240,
+    stridePerFrame: 60,
   },
   hard: {
     id: 'hard',
     label: 'Hard',
-    speedMultiplierLabel: '2.0×',
-    description: 'Double-speed swift ibex challenge',
+    gaitMode: 'run',
+    speedMultiplierLabel: 'Fast Run',
+    description: 'High-speed sprint with faster gallop cadence',
     runSpeed: 930,
-    headbuttBoost: 310,
+    headbuttBoost: 320,
+    stridePerFrame: 60,
   },
 };
 
@@ -100,6 +109,7 @@ export interface GoatEntity {
   jumpAnimTime: number;
   headbuttTimer: number;
   headbuttCooldown: number;
+  attackStrikeEmitted: boolean;
   invulnTimer: number;
   runDistance: number;
   scaleX: number;
@@ -108,11 +118,12 @@ export interface GoatEntity {
 }
 
 export type SimEvent =
-  | { type: 'jump'; x: number; y: number }
+  | { type: 'jump'; x: number; y: number; dir: 1 | -1 }
   | { type: 'spring'; x: number; y: number }
   | { type: 'land'; x: number; y: number; impact: number }
   | { type: 'headbutt'; x: number; y: number; dir: 1 | -1 }
-  | { type: 'enemyKo'; x: number; y: number; points: number; kind: 'evilBird' | 'evilMan' }
+  | { type: 'attackStrike'; x: number; y: number; dir: 1 | -1 }
+  | { type: 'enemyKo'; x: number; y: number; dir: 1 | -1; points: number; kind: 'evilBird' | 'evilMan' }
   | { type: 'hurt'; x: number; y: number; heartsLeft: number }
   | { type: 'turn'; x: number; y: number; dir: 1 | -1 }
   | { type: 'victory'; x: number; y: number; score: number }
@@ -141,8 +152,8 @@ export interface SimulationState {
 }
 
 export const PHYSICS = {
-  RUN_SPEED: 465,
-  HEADBUTT_BOOST: 175,
+  RUN_SPEED: 620,
+  HEADBUTT_BOOST: 240,
   GRAVITY: 2650,
   FALL_GRAVITY: 3450,
   MAX_FALL_SPEED: 2050,
@@ -150,12 +161,13 @@ export const PHYSICS = {
   JUMP_CUT_MULTIPLIER: 0.52,
   COYOTE_TIME: 0.11,
   JUMP_BUFFER_TIME: 0.13,
-  JUMP_ANIM_DURATION: 0.56,
-  HEADBUTT_DURATION: 0.34,
+  JUMP_ANIM_DURATION: 0.62,
+  HEADBUTT_DURATION: 0.48,
   HEADBUTT_WINDUP: 0.0,
-  HEADBUTT_ACTIVE_END: 0.25,
-  HEADBUTT_COOLDOWN: 0.42,
-  HEADBUTT_REACH: 98,
+  HEADBUTT_STRIKE_AT: 0.31,
+  HEADBUTT_ACTIVE_END: 0.44,
+  HEADBUTT_COOLDOWN: 0.52,
+  HEADBUTT_REACH: 118,
   INVULN_DURATION: 1.4,
   MAX_HEARTS: 3,
 } as const;
@@ -205,6 +217,7 @@ export function createInitialState(
     jumpAnimTime: 0,
     headbuttTimer: 0,
     headbuttCooldown: 0,
+    attackStrikeEmitted: false,
     invulnTimer: 0,
     runDistance: 0,
     scaleX: 1,
@@ -377,18 +390,34 @@ export function stepSimulation(
     g.jumpBufferTimer = Math.max(0, g.jumpBufferTimer - dt);
   }
 
-  // Headbutt trigger
+  // Attack trigger (13-frame rearing horn-slam animation)
   if (input.headbuttPressed && g.headbuttCooldown <= 0) {
     g.headbuttTimer = PHYSICS.HEADBUTT_DURATION;
     g.headbuttCooldown = PHYSICS.HEADBUTT_COOLDOWN;
-    g.scaleX = 1.2;
-    g.scaleY = 0.86;
+    g.attackStrikeEmitted = false;
+    g.scaleX = 1.14;
+    g.scaleY = 0.9;
     events.push({
       type: 'headbutt',
       x: g.x + (g.dir === 1 ? g.w : 0),
       y: g.y + g.h * 0.45,
       dir: g.dir,
     });
+  }
+
+  // Emit horn-slam impact effect right as the 13-frame attack thrusts forward (frames 10-11)
+  if (g.headbuttTimer > 0 && !g.attackStrikeEmitted) {
+    const attackElapsed = PHYSICS.HEADBUTT_DURATION - g.headbuttTimer;
+    if (attackElapsed >= PHYSICS.HEADBUTT_STRIKE_AT) {
+      g.attackStrikeEmitted = true;
+      state.trauma = Math.min(1, state.trauma + 0.22);
+      events.push({
+        type: 'attackStrike',
+        x: g.x + (g.dir === 1 ? g.w + 52 : -52),
+        y: g.y + g.h * 0.48,
+        dir: g.dir,
+      });
+    }
   }
 
   // Jump execution (buffered + coyote time)
@@ -399,9 +428,9 @@ export function stepSimulation(
     g.jumpBufferTimer = 0;
     g.jumpAnimActive = true;
     g.jumpAnimTime = 0;
-    g.scaleX = 0.84;
-    g.scaleY = 1.18;
-    events.push({ type: 'jump', x: g.x + g.w * 0.5, y: g.y + g.h });
+    g.scaleX = 0.86;
+    g.scaleY = 1.16;
+    events.push({ type: 'jump', x: g.x + g.w * 0.5, y: g.y + g.h, dir: g.dir });
   }
 
   // Variable jump height cut when jump is released early while ascending
@@ -617,6 +646,7 @@ export function stepSimulation(
         type: 'enemyKo',
         x: enemy.x + enemy.w * 0.5,
         y: enemy.y + enemy.h * 0.5,
+        dir: g.dir,
         points: enemy.points,
         kind: enemy.kind,
       });

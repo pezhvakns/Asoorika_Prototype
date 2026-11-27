@@ -1,4 +1,4 @@
-import { type LoadedAssets, SPRITE_CROPS } from './assets';
+import { GOAT_SPRITE_METRICS, type LoadedAssets, SPRITE_CROPS } from './assets';
 import {
   CLAY_BG_COLOR,
   JUMP_PADS,
@@ -7,7 +7,12 @@ import {
   TREE_GOAL,
 } from './levelData';
 import { type EffectsPool } from './particles';
-import { PHYSICS, type SimulationState, getHeadbuttHitbox } from './physics';
+import {
+  DIFFICULTY_CONFIGS,
+  PHYSICS,
+  type SimulationState,
+  getHeadbuttHitbox,
+} from './physics';
 
 export interface ViewportMetrics {
   scale: number;
@@ -211,7 +216,7 @@ export function renderGameFrame(
     ctx.restore();
   }
 
-  // 6. Goat Protagonist (normalized across RunLeft, RunRight, one-shot Jump, and Headbutt Punch)
+  // 6. Goat Protagonist (normalized across Walk, Run, one-shot Jump, and 13-frame Attack)
   const g = state.goat;
   const invulnBlink =
     g.invulnTimer > 0 && Math.floor(g.invulnTimer * 18) % 2 === 0;
@@ -232,18 +237,25 @@ export function renderGameFrame(
     }
 
     if (g.headbuttTimer > 0) {
-      // 4-frame Headbutt animation (flipped when facing left)
+      // 13-frame rearing horn-slam Attack animation (flipped when facing left)
       const progress =
         1 - Math.max(0, g.headbuttTimer / PHYSICS.HEADBUTT_DURATION);
       const frameIdx = Math.min(
-        assets.goatPunch.length - 1,
-        Math.floor(progress * assets.goatPunch.length)
+        assets.goatAttack.length - 1,
+        Math.floor(progress * assets.goatAttack.length)
       );
-      const img = assets.goatPunch[frameIdx];
+      const img = assets.goatAttack[frameIdx];
+      const m = GOAT_SPRITE_METRICS.attack;
       if (g.dir === -1) ctx.scale(-1, 1);
-      ctx.drawImage(img, -128.5, -201, 257, 202);
+      ctx.drawImage(
+        img,
+        -m.anchorX * m.scale,
+        -m.anchorY * m.scale,
+        m.srcSize * m.scale,
+        m.srcSize * m.scale
+      );
     } else if (!g.grounded && g.jumpAnimActive) {
-      // 8-frame one-shot Jump animation (plays once per jump, flipped when facing left)
+      // 10-frame one-shot Jump animation with per-frame hoof anchoring
       const progress = Math.min(
         0.999,
         g.jumpAnimTime / PHYSICS.JUMP_ANIM_DURATION
@@ -253,23 +265,36 @@ export function renderGameFrame(
         Math.floor(progress * assets.goatJump.length)
       );
       const img = assets.goatJump[frameIdx];
+      const m = GOAT_SPRITE_METRICS.jump;
+      const frameFootY = m.frameFeetY[frameIdx] ?? m.frameFeetY[0];
       if (g.dir === -1) ctx.scale(-1, 1);
-      ctx.drawImage(img, -128.5, -201, 257, 202);
+      ctx.drawImage(
+        img,
+        -m.anchorX * m.scale,
+        -frameFootY * m.scale,
+        m.srcSize * m.scale,
+        m.srcSize * m.scale
+      );
     } else if (state.phase === 'title') {
       // Resting ibex silhouette on Title Screen
       ctx.drawImage(assets.goatIdle, -64, -154, 128, 154);
-    } else if (g.dir === 1) {
-      // 6-frame RunRight synced to distance traveled (cropped cleanly from 392x392)
-      const frameIdx = Math.floor(g.runDistance / 42) % assets.goatRunRight.length;
-      const img = assets.goatRunRight[frameIdx];
-      const c = SPRITE_CROPS.goatRunRight;
-      ctx.drawImage(img, c.sx, c.sy, c.sw, c.sh, -64, -154, 128, 154);
     } else {
-      // 6-frame RunLeft synced to distance traveled
-      const frameIdx = Math.floor(g.runDistance / 42) % assets.goatRunLeft.length;
-      const img = assets.goatRunLeft[frameIdx];
-      const c = SPRITE_CROPS.goatRunLeft;
-      ctx.drawImage(img, c.sx, c.sy, c.sw, c.sh, -64, -154, 128, 154);
+      // Difficulty-matched gait: Easy uses Walk, Medium & Hard use Run synced 1:1 to stridePerFrame
+      const diffCfg = DIFFICULTY_CONFIGS[state.difficulty];
+      const useWalk = diffCfg.gaitMode === 'walk';
+      const frames = useWalk ? assets.goatWalk : assets.goatRun;
+      const m = useWalk ? GOAT_SPRITE_METRICS.walk : GOAT_SPRITE_METRICS.run;
+      const frameIdx =
+        Math.floor(g.runDistance / diffCfg.stridePerFrame) % frames.length;
+      const img = frames[frameIdx];
+      if (g.dir === -1) ctx.scale(-1, 1);
+      ctx.drawImage(
+        img,
+        -m.anchorX * m.scale,
+        -m.anchorY * m.scale,
+        m.srcSize * m.scale,
+        m.srcSize * m.scale
+      );
     }
 
     if (g.hitFlashTimer > 0) {
@@ -282,38 +307,180 @@ export function renderGameFrame(
     ctx.restore();
   }
 
-  // Headbutt kinetic horn arc slash during active frames
+  // Attack horn-slam kinetic slash arc timed to the forward strike frames (frames 10-13)
   const hb = getHeadbuttHitbox(g);
-  if (hb) {
+  const attackElapsed =
+    g.headbuttTimer > 0 ? PHYSICS.HEADBUTT_DURATION - g.headbuttTimer : -1;
+  if (hb && attackElapsed >= PHYSICS.HEADBUTT_STRIKE_AT * 0.82) {
+    const slashProgress = Math.min(
+      1,
+      (attackElapsed - PHYSICS.HEADBUTT_STRIKE_AT * 0.82) /
+        Math.max(0.05, PHYSICS.HEADBUTT_ACTIVE_END - PHYSICS.HEADBUTT_STRIKE_AT * 0.82)
+    );
     ctx.save();
-    ctx.strokeStyle = 'rgba(246, 228, 206, 0.85)';
-    ctx.lineWidth = 8;
+    const arcX = g.dir === 1 ? g.x + g.w + 46 : g.x - 46;
+    const arcY = g.y + g.h * 0.44;
+    ctx.globalAlpha = (1 - slashProgress * 0.65) * 0.92;
     ctx.lineCap = 'round';
-    const arcX = g.dir === 1 ? g.x + g.w + 18 : g.x - 18;
-    const arcY = g.y + g.h * 0.42;
+
+    // Outer warm amber sweep
+    ctx.strokeStyle = '#F4B444';
+    ctx.lineWidth = 14 * (1 - slashProgress * 0.45);
     ctx.beginPath();
     if (g.dir === 1) {
-      ctx.arc(arcX - 24, arcY, 64, -Math.PI * 0.36, Math.PI * 0.32);
+      ctx.arc(arcX - 38, arcY, 78, -Math.PI * 0.42, Math.PI * 0.34);
     } else {
-      ctx.arc(arcX + 24, arcY, 64, Math.PI * 0.68, Math.PI * 1.36);
+      ctx.arc(arcX + 38, arcY, 78, Math.PI * 0.66, Math.PI * 1.42);
+    }
+    ctx.stroke();
+
+    // Inner bright parchment highlight
+    ctx.strokeStyle = '#FFF5E8';
+    ctx.lineWidth = 6 * (1 - slashProgress * 0.4);
+    ctx.beginPath();
+    if (g.dir === 1) {
+      ctx.arc(arcX - 30, arcY, 72, -Math.PI * 0.36, Math.PI * 0.28);
+    } else {
+      ctx.arc(arcX + 30, arcY, 72, Math.PI * 0.72, Math.PI * 1.36);
     }
     ctx.stroke();
     ctx.restore();
   }
 
-  // 7. Pooled particles
+  // 7. Pooled shockwave & impact effects (land rings, horn-slam strikes, enemy KO bursts)
+  for (let i = 0; i < effects.shockwaves.length; i++) {
+    const s = effects.shockwaves[i];
+    if (!s.active) continue;
+    const progress = 1 - s.life / s.maxLife;
+    const alpha = Math.max(0, 1 - progress);
+    ctx.save();
+    ctx.translate(s.x, s.y);
+
+    if (s.kind === 'land') {
+      ctx.scale(1, 0.32);
+      ctx.globalAlpha = alpha * 0.65;
+      ctx.strokeStyle = s.secondaryColor;
+      ctx.lineWidth = s.lineWidth * (1.2 - progress * 0.6);
+      ctx.beginPath();
+      ctx.arc(0, 0, Math.max(4, s.radius), 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.globalAlpha = alpha * 0.45;
+      ctx.strokeStyle = s.color;
+      ctx.lineWidth = s.lineWidth * 0.65;
+      ctx.beginPath();
+      ctx.arc(0, 0, Math.max(2, s.radius * 0.72), 0, Math.PI * 2);
+      ctx.stroke();
+    } else if (s.kind === 'strike') {
+      // Directional crescent impact ring + 6 starburst rays
+      const startA = s.dir === 1 ? -Math.PI * 0.58 : Math.PI * 0.42;
+      const endA = s.dir === 1 ? Math.PI * 0.58 : Math.PI * 1.58;
+      ctx.globalAlpha = alpha * 0.9;
+      ctx.strokeStyle = s.secondaryColor;
+      ctx.lineWidth = s.lineWidth * (1.15 - progress * 0.65);
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.arc(0, 0, Math.max(6, s.radius), startA, endA);
+      ctx.stroke();
+
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = s.color;
+      ctx.lineWidth = Math.max(2, s.lineWidth * 0.5);
+      ctx.beginPath();
+      ctx.arc(0, 0, Math.max(4, s.radius * 0.78), startA + 0.12, endA - 0.12);
+      ctx.stroke();
+
+      // Radial starburst impact lines
+      const rayCount = 6;
+      const innerR = s.radius * 0.36;
+      const outerR = s.radius * 1.12;
+      for (let r = 0; r < rayCount; r++) {
+        const frac = (r / (rayCount - 1)) - 0.5;
+        const angle = (s.dir === 1 ? 0 : Math.PI) + frac * 1.7;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(angle) * innerR, Math.sin(angle) * innerR);
+        ctx.lineTo(Math.cos(angle) * outerR, Math.sin(angle) * outerR);
+        ctx.stroke();
+      }
+    } else {
+      // Heavy KO dual-ring starburst
+      ctx.globalAlpha = alpha * 0.92;
+      ctx.strokeStyle = s.secondaryColor;
+      ctx.lineWidth = s.lineWidth * (1.2 - progress * 0.7);
+      ctx.beginPath();
+      ctx.arc(0, 0, Math.max(8, s.radius), 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = s.color;
+      ctx.lineWidth = Math.max(2, s.lineWidth * 0.55);
+      ctx.beginPath();
+      ctx.arc(0, 0, Math.max(5, s.radius * 0.68), 0, Math.PI * 2);
+      ctx.stroke();
+
+      const spikes = 8;
+      for (let r = 0; r < spikes; r++) {
+        const angle = (r / spikes) * Math.PI * 2 + progress * 0.35;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(angle) * s.radius * 0.45, Math.sin(angle) * s.radius * 0.45);
+        ctx.lineTo(Math.cos(angle) * s.radius * 1.18, Math.sin(angle) * s.radius * 1.18);
+        ctx.stroke();
+      }
+    }
+
+    ctx.restore();
+  }
+
+  // 8. Pooled particles (billowing clay dust, terracotta dirt clods, kinetic sparks, shards)
   for (let i = 0; i < effects.particles.length; i++) {
     const p = effects.particles[i];
     if (!p.active) continue;
-    const alpha = Math.max(0, p.life / p.maxLife);
+    const lifeRatio = Math.max(0, p.life / p.maxLife);
+    const t = 1 - lifeRatio;
+    const curSize = p.size + (p.endSize - p.size) * t;
     ctx.save();
-    ctx.globalAlpha = alpha;
     ctx.translate(p.x, p.y);
     ctx.rotate(p.rotation);
     ctx.fillStyle = p.color;
 
-    if (p.shape === 'diamond') {
-      const s = p.size;
+    if (p.shape === 'dust') {
+      // Soft layered billowing clay dust puff
+      ctx.globalAlpha = lifeRatio * lifeRatio * 0.62;
+      ctx.beginPath();
+      ctx.arc(0, 0, curSize, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = lifeRatio * 0.38;
+      ctx.beginPath();
+      ctx.arc(curSize * 0.42, -curSize * 0.18, curSize * 0.68, 0, Math.PI * 2);
+      ctx.arc(-curSize * 0.38, curSize * 0.14, curSize * 0.62, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (p.shape === 'dirt') {
+      // Angular terracotta clay clod
+      ctx.globalAlpha = Math.min(1, lifeRatio * 1.4);
+      const s = curSize;
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.9, -s * 0.4);
+      ctx.lineTo(s * 0.2, -s * 0.95);
+      ctx.lineTo(s * 0.95, -s * 0.15);
+      ctx.lineTo(s * 0.55, s * 0.85);
+      ctx.lineTo(-s * 0.75, s * 0.65);
+      ctx.closePath();
+      ctx.fill();
+    } else if (p.shape === 'spark') {
+      // Tapered directional impact streak
+      ctx.globalAlpha = lifeRatio;
+      const len = curSize * 2.6;
+      const thick = Math.max(2, curSize * 0.34);
+      ctx.beginPath();
+      ctx.moveTo(len * 0.55, 0);
+      ctx.lineTo(-len * 0.15, -thick);
+      ctx.lineTo(-len * 0.55, 0);
+      ctx.lineTo(-len * 0.15, thick);
+      ctx.closePath();
+      ctx.fill();
+    } else if (p.shape === 'diamond') {
+      ctx.globalAlpha = lifeRatio;
+      const s = curSize;
       ctx.beginPath();
       ctx.moveTo(0, -s);
       ctx.lineTo(s * 0.7, 0);
@@ -322,13 +489,15 @@ export function renderGameFrame(
       ctx.closePath();
       ctx.fill();
     } else if (p.shape === 'leaf') {
-      const s = p.size;
+      ctx.globalAlpha = lifeRatio;
+      const s = curSize;
       ctx.beginPath();
       ctx.ellipse(0, 0, s * 1.4, s * 0.65, 0, 0, Math.PI * 2);
       ctx.fill();
     } else {
+      ctx.globalAlpha = lifeRatio;
       ctx.beginPath();
-      ctx.arc(0, 0, p.size, 0, Math.PI * 2);
+      ctx.arc(0, 0, curSize, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.restore();

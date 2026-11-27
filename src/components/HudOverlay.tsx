@@ -198,8 +198,8 @@ export function HudOverlay({
       <div className="flex items-end justify-between gap-4">
         <div className="hidden sm:block text-xs font-medium text-[#F6E4CE] bg-[#1A120D]/85 border border-[#5B3B24] rounded-md px-3 py-1.5">
           {controlMode === 'webcam'
-            ? 'Left Fist Jump · Right Fist Headbutt · Space / E Backup · Esc Pause'
-            : 'Space Jump · E Headbutt · P Pause · R Restart'}
+            ? 'Left Fist Jump · Right Fist Attack · Space / E Backup · Esc Pause'
+            : 'Space Jump · E Attack · P Pause · R Restart'}
         </div>
 
         {/* Mobile/Touch action buttons */}
@@ -222,7 +222,7 @@ export function HudOverlay({
             }}
             className="min-w-[96px] h-12 px-4 rounded-md bg-[#1A120D]/90 border border-[#C83A2B] text-sm font-bold text-[#F6E4CE] active:bg-[#C83A2B]"
           >
-            Headbutt
+            Attack
           </button>
         </div>
 
@@ -267,7 +267,7 @@ export function HudOverlay({
                     : 'text-[#C89B70]'
                 }
               >
-                R-Fist: {gesture.rightFist ? 'BUTT' : 'Open'}
+                R-Fist: {gesture.rightFist ? 'ATTACK' : 'Open'}
               </span>
             </div>
           </div>

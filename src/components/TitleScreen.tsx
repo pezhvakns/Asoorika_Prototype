@@ -143,7 +143,7 @@ export function TitleScreen({
             {/* Required Museum Experience Instruction Text */}
             <p className="text-sm sm:text-base leading-relaxed text-[#F6E4CE] max-w-xl mx-auto mb-5">
               This is a prototype interactive experience for museum. Instructions:
-              jump above obstacles and headbutt the evil to reach the leaf!
+              jump above obstacles and attack the evil to reach the leaf!
             </p>
 
             {/* Goat Speed Level Selector: Easy / Medium / Hard */}
@@ -184,7 +184,7 @@ export function TitleScreen({
                 })}
               </div>
               <p className="mt-2 text-xs text-[#D9B084]">
-                {activeDiff.description} ({activeDiff.speedMultiplierLabel} speed)
+                {activeDiff.description}
               </p>
             </div>
 
@@ -225,8 +225,8 @@ export function TitleScreen({
               </div>
               <p className="mt-2 text-xs text-[#D9B084]">
                 {controlMode === 'keyboard'
-                  ? 'Press Space to jump over red spikes and E to headbutt evil creatures.'
-                  : 'Clench your Left Hand Fist to jump and Right Hand Fist to headbutt (Space & E also work).'}
+                  ? 'Press Space to jump over red spikes and E to attack evil creatures.'
+                  : 'Clench your Left Hand Fist to jump and Right Hand Fist to attack (Space & E also work).'}
               </p>
             </div>
 
@@ -262,8 +262,8 @@ export function TitleScreen({
       <div className="flex justify-center">
         <div className="px-4 py-1.5 rounded-md bg-[#1A120D]/90 border border-[#5B3B24] text-xs text-[#F6E4CE] tracking-wide">
           {controlMode === 'keyboard'
-            ? 'Space Jump · E Headbutt · P Pause · Enter Start'
-            : 'Left Hand Fist Jump · Right Hand Fist Headbutt · Esc Pause'}
+            ? 'Space Jump · E Attack · P Pause · Enter Start'
+            : 'Left Hand Fist Jump · Right Hand Fist Attack · Esc Pause'}
         </div>
       </div>
     </div>

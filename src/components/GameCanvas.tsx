@@ -259,21 +259,7 @@ export function GameCanvas({
         switch (ev.type) {
           case 'jump':
             soundEngine.playJump();
-            effects.spawnBurst({
-              x: ev.x,
-              y: ev.y,
-              count: 8,
-              color: '#F6E4CE',
-              speedMin: 100,
-              speedMax: 280,
-              sizeMin: 5,
-              sizeMax: 10,
-              lifeMin: 0.22,
-              lifeMax: 0.42,
-              gravity: 500,
-              angleMin: Math.PI * 1.1,
-              angleMax: Math.PI * 1.9,
-            });
+            effects.spawnJumpDust(ev.x, ev.y, ev.dir);
             break;
           case 'spring':
             soundEngine.playSpring();
@@ -297,57 +283,36 @@ export function GameCanvas({
             break;
           case 'land':
             soundEngine.playLand(ev.impact);
-            effects.spawnBurst({
-              x: ev.x,
-              y: ev.y,
-              count: 6,
-              color: '#8D552B',
-              speedMin: 70,
-              speedMax: 210,
-              sizeMin: 4,
-              sizeMax: 8,
-              lifeMin: 0.18,
-              lifeMax: 0.35,
-              gravity: 400,
-              angleMin: Math.PI * 1.05,
-              angleMax: Math.PI * 1.95,
-            });
+            effects.spawnLandDust(ev.x, ev.y, ev.impact);
             break;
           case 'headbutt':
             soundEngine.playHeadbutt();
+            // Subtle hoof anticipation dust kick as the goat rears up to attack
             effects.spawnBurst({
-              x: ev.x,
-              y: ev.y,
-              count: 8,
-              color: '#F6E4CE',
-              speedMin: 180,
-              speedMax: 420,
-              sizeMin: 5,
-              sizeMax: 10,
-              lifeMin: 0.15,
-              lifeMax: 0.3,
-              gravity: 100,
-              angleMin: ev.dir === 1 ? -0.6 : Math.PI - 0.6,
-              angleMax: ev.dir === 1 ? 0.6 : Math.PI + 0.6,
-              shape: 'diamond',
+              x: ev.x - ev.dir * 52,
+              y: ev.y + 68,
+              count: 5,
+              color: '#C89260',
+              speedMin: 60,
+              speedMax: 150,
+              sizeMin: 9,
+              sizeMax: 14,
+              endSizeMult: 1.9,
+              lifeMin: 0.2,
+              lifeMax: 0.34,
+              gravity: -25,
+              drag: 0.14,
+              angleMin: ev.dir === 1 ? Math.PI * 0.9 : -0.35,
+              angleMax: ev.dir === 1 ? Math.PI * 1.35 : 0.1,
+              shape: 'dust',
             });
+            break;
+          case 'attackStrike':
+            effects.spawnAttackImpact(ev.x, ev.y, ev.dir);
             break;
           case 'enemyKo':
             soundEngine.playEnemyKo();
-            effects.spawnBurst({
-              x: ev.x,
-              y: ev.y,
-              count: 26,
-              color: '#0B0D14',
-              speedMin: 200,
-              speedMax: 720,
-              sizeMin: 7,
-              sizeMax: 16,
-              lifeMin: 0.35,
-              lifeMax: 0.75,
-              gravity: 1100,
-              shape: 'diamond',
-            });
+            effects.spawnEnemyImpact(ev.x, ev.y, ev.dir);
             effects.spawnPopup(ev.x, ev.y - 50, `+${ev.points}`, '#FCD34D');
             break;
           case 'hurt':
@@ -523,7 +488,9 @@ export function GameCanvas({
         handleSimEvents(simEvents);
       }
 
-      effects.update(dt);
+      if (state.phase !== 'paused') {
+        effects.update(dt);
+      }
       updateCamera(state, metrics.viewWorldW, metrics.viewWorldH, dt, false);
 
       if (assets) {

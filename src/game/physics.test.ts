@@ -184,7 +184,7 @@ test('physics constants remain within responsive platforming bounds', () => {
   assert.ok(PHYSICS.FALL_GRAVITY > PHYSICS.GRAVITY);
 });
 
-test('easy, medium, and hard levels apply 3 distinct increasing goat speeds', () => {
+test('easy, medium, and hard levels apply gait-matched increasing goat speeds', () => {
   const easyState = createInitialState('playing', 'easy');
   const mediumState = createInitialState('playing', 'medium');
   const hardState = createInitialState('playing', 'hard');
@@ -212,6 +212,32 @@ test('easy, medium, and hard levels apply 3 distinct increasing goat speeds', ()
     Math.abs(hardDist - DIFFICULTY_CONFIGS.hard.runSpeed) < 5,
     `hard distance ${hardDist.toFixed(1)} should match hard runSpeed`
   );
-  assert.ok(easyDist < mediumDist && mediumDist < hardDist, 'speeds must strictly increase from easy to medium to hard');
-  assert.equal(DIFFICULTY_CONFIGS.hard.runSpeed, DIFFICULTY_CONFIGS.easy.runSpeed * 2);
+  assert.ok(
+    easyDist < mediumDist && mediumDist < hardDist,
+    'speeds must strictly increase from easy to medium to hard'
+  );
+  assert.equal(DIFFICULTY_CONFIGS.easy.gaitMode, 'walk');
+  assert.equal(DIFFICULTY_CONFIGS.medium.gaitMode, 'run');
+  assert.equal(DIFFICULTY_CONFIGS.hard.gaitMode, 'run');
+  assert.ok(
+    DIFFICULTY_CONFIGS.hard.runSpeed > DIFFICULTY_CONFIGS.medium.runSpeed,
+    'hard uses the same run animation at a faster speed than medium'
+  );
+});
+
+test('attack emits an attackStrike impact event during the horn-slam strike window', () => {
+  const state = createInitialState('playing', 'easy');
+  const firstEvents = stepSimulation(
+    state,
+    { jumpPressed: false, jumpHeld: false, headbuttPressed: true },
+    1 / 60
+  );
+  assert.ok(firstEvents.some((e) => e.type === 'headbutt'));
+
+  let strikeCount = 0;
+  for (let i = 0; i < 35; i++) {
+    const evs = stepSimulation(state, IDLE_INPUT, 1 / 60);
+    strikeCount += evs.filter((e) => e.type === 'attackStrike').length;
+  }
+  assert.equal(strikeCount, 1, 'attackStrike impact should emit exactly once per attack');
 });

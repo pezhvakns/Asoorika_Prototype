@@ -19,37 +19,47 @@ export const ASSET_URLS = {
   evilManIdle: assetUrl('assets/aistudio/EvilMan_79b95001.png'),
   evilBirdIdle: assetUrl('assets/aistudio/EvilBird_3f9e84ff.png'),
 
-  goatRunRight: [
-    assetUrl('assets/aistudio/GoatRunRight_1_bb932fad.png'),
-    assetUrl('assets/aistudio/GoatRunRight_2_72c967e1.png'),
-    assetUrl('assets/aistudio/GoatRunRight_3_a192cab1.png'),
-    assetUrl('assets/aistudio/GoatRunRight_4_dd3671f3.png'),
-    assetUrl('assets/aistudio/GoatRunRight_5_a9a5c856.png'),
-    assetUrl('assets/aistudio/GoatRunRight_6_543256c6.png'),
+  goatWalk: [
+    assetUrl('assets/aistudio/Goat_Walk_01_d05662db.png'),
+    assetUrl('assets/aistudio/Goat_Walk_02_84522474.png'),
+    assetUrl('assets/aistudio/Goat_Walk_03_08f67e7d.png'),
+    assetUrl('assets/aistudio/Goat_Walk_04_67c547ba.png'),
+    assetUrl('assets/aistudio/Goat_Walk_05_8abff913.png'),
+    assetUrl('assets/aistudio/Goat_Walk_06_da4f802e.png'),
   ],
-  goatRunLeft: [
-    assetUrl('assets/aistudio/GoatRunLeft_1_9b8047ee.png'),
-    assetUrl('assets/aistudio/GoatRunLeft_2_7e645aa7.png'),
-    assetUrl('assets/aistudio/GoatRunLeft_3_da0f2ff9.png'),
-    assetUrl('assets/aistudio/GoatRunLeft_4_c73619cd.png'),
-    assetUrl('assets/aistudio/GoatRunLeft_5_91166aae.png'),
-    assetUrl('assets/aistudio/GoatRunLeft_6_248bc823.png'),
+  goatRun: [
+    assetUrl('assets/aistudio/Goat_Run_01_bb1dba5d.png'),
+    assetUrl('assets/aistudio/Goat_Run_02_54968e55.png'),
+    assetUrl('assets/aistudio/Goat_Run_03_e5392ec7.png'),
+    assetUrl('assets/aistudio/Goat_Run_04_c308a721.png'),
+    assetUrl('assets/aistudio/Goat_Run_05_8ee2f2c7.png'),
   ],
   goatJump: [
-    assetUrl('assets/aistudio/GoatJump_1_498a8f70.png'),
-    assetUrl('assets/aistudio/GoatJump_2_65162e29.png'),
-    assetUrl('assets/aistudio/GoatJump_3_403cd319.png'),
-    assetUrl('assets/aistudio/GoatJump_4_d3fa9eea.png'),
-    assetUrl('assets/aistudio/GoatJump_5_acd1ac03.png'),
-    assetUrl('assets/aistudio/GoatJump_6_315924d0.png'),
-    assetUrl('assets/aistudio/GoatJump_7_23bbaeaf.png'),
-    assetUrl('assets/aistudio/GoatJump_8_592b0f91.png'),
+    assetUrl('assets/aistudio/Goat_Jump_01_d26fad72.png'),
+    assetUrl('assets/aistudio/Goat_Jump_02_cfed125c.png'),
+    assetUrl('assets/aistudio/Goat_Jump_03_edc11e2b.png'),
+    assetUrl('assets/aistudio/Goat_Jump_04_a431e062.png'),
+    assetUrl('assets/aistudio/Goat_Jump_05_15357e00.png'),
+    assetUrl('assets/aistudio/Goat_Jump_06_e64e72a8.png'),
+    assetUrl('assets/aistudio/Goat_Jump_07_46503744.png'),
+    assetUrl('assets/aistudio/Goat_Jump_08_a601d2dd.png'),
+    assetUrl('assets/aistudio/Goat_Jump_09_612d379f.png'),
+    assetUrl('assets/aistudio/Goat_Jump_10_ea540317.png'),
   ],
-  goatPunch: [
-    assetUrl('assets/aistudio/GoatPunch_1_498a8f70.png'),
-    assetUrl('assets/aistudio/GoatPunch_2_71607662.png'),
-    assetUrl('assets/aistudio/GoatPunch_3_71607662.png'),
-    assetUrl('assets/aistudio/GoatPunch_4_480265ab.png'),
+  goatAttack: [
+    assetUrl('assets/aistudio/Goat_Attack_01_6eb89f7f.png'),
+    assetUrl('assets/aistudio/Goat_Attack_02_39c56541.png'),
+    assetUrl('assets/aistudio/Goat_Attack_03_2f7a0fda.png'),
+    assetUrl('assets/aistudio/Goat_Attack_04_462558df.png'),
+    assetUrl('assets/aistudio/Goat_Attack_05_04aeec4c.png'),
+    assetUrl('assets/aistudio/Goat_Attack_06_4215131a.png'),
+    assetUrl('assets/aistudio/Goat_Attack_07_9e345b69.png'),
+    assetUrl('assets/aistudio/Goat_Attack_08_7aea8569.png'),
+    assetUrl('assets/aistudio/Goat_Attack_09_47c8b7f1.png'),
+    assetUrl('assets/aistudio/Goat_Attack_10_0e8fc3ea.png'),
+    assetUrl('assets/aistudio/Goat_Attack_11_7889a5f1.png'),
+    assetUrl('assets/aistudio/Goat_Attack_12_cd8bbe7b.png'),
+    assetUrl('assets/aistudio/Goat_Attack_13_a03e9dc3.png'),
   ],
   evilMan: [
     assetUrl('assets/aistudio/EvilMan_1_14058508.png'),
@@ -87,16 +97,25 @@ export const ASSET_URLS = {
   ],
 } as const;
 
-// Measured non-transparent source crops so every animation frame aligns cleanly with zero scale jitter
+// Measured source dimensions & hoof anchors so Walk, Run, Jump, and Attack share identical 128x154 body scale
 export const SPRITE_CROPS = {
-  goatRunRight: { sx: 108, sy: 77, sw: 183, sh: 219 } satisfies SpriteFrameCrop,
-  goatRunLeft: { sx: 0, sy: 0, sw: 183, sh: 219 } satisfies SpriteFrameCrop,
-  goatJumpFull: { sx: 0, sy: 0, sw: 257, sh: 202 } satisfies SpriteFrameCrop,
-  goatPunchFull: { sx: 0, sy: 0, sw: 257, sh: 202 } satisfies SpriteFrameCrop,
   evilManFull: { sx: 0, sy: 0, sw: 333, sh: 268 } satisfies SpriteFrameCrop,
   evilBirdFull: { sx: 0, sy: 0, sw: 392, sh: 392 } satisfies SpriteFrameCrop,
   treeFull: { sx: 0, sy: 0, sw: 281, sh: 248 } satisfies SpriteFrameCrop,
 };
+
+export const GOAT_SPRITE_METRICS = {
+  walk: { srcSize: 392, scale: 0.44, anchorX: 206, anchorY: 366 },
+  run: { srcSize: 419, scale: 0.434, anchorX: 217, anchorY: 394 },
+  jump: {
+    srcSize: 1181,
+    scale: 0.2575,
+    anchorX: 551,
+    // Measured hoof-bottom Y per frame so the physics engine drives exact elevation without floating offset
+    frameFeetY: [1111, 1111, 1112, 1112, 1080, 758, 700, 669, 663, 669],
+  },
+  attack: { srcSize: 787, scale: 0.38, anchorX: 352, anchorY: 733 },
+} as const;
 
 export interface LoadedAssets {
   staticMap: HTMLImageElement;
@@ -105,10 +124,10 @@ export interface LoadedAssets {
   springPadSprite: HTMLCanvasElement;
   jumpGuide: HTMLImageElement;
   goatIdle: HTMLImageElement;
-  goatRunRight: HTMLImageElement[];
-  goatRunLeft: HTMLImageElement[];
-  goatJump: HTMLImageElement[];
-  goatPunch: HTMLImageElement[];
+  goatWalk: HTMLCanvasElement[];
+  goatRun: HTMLCanvasElement[];
+  goatJump: HTMLCanvasElement[];
+  goatAttack: HTMLCanvasElement[];
   evilMan: HTMLImageElement[];
   evilBird: HTMLImageElement[];
   tree: HTMLImageElement[];
@@ -206,6 +225,24 @@ function buildSpringPadSprite(jumpGuide: HTMLImageElement): HTMLCanvasElement {
   return canvas;
 }
 
+function bakeSpriteFrames(
+  images: HTMLImageElement[],
+  targetSize: number
+): HTMLCanvasElement[] {
+  return images.map((img) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = targetSize;
+    canvas.height = targetSize;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, targetSize, targetSize);
+    }
+    return canvas;
+  });
+}
+
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -228,10 +265,10 @@ export function loadAllGameAssets(
     ASSET_URLS.damageZone,
     ASSET_URLS.jumpGuide,
     ASSET_URLS.goatIdle,
-    ...ASSET_URLS.goatRunRight,
-    ...ASSET_URLS.goatRunLeft,
+    ...ASSET_URLS.goatWalk,
+    ...ASSET_URLS.goatRun,
     ...ASSET_URLS.goatJump,
-    ...ASSET_URLS.goatPunch,
+    ...ASSET_URLS.goatAttack,
     ...ASSET_URLS.evilMan,
     ...ASSET_URLS.evilBird,
     ...ASSET_URLS.tree,
@@ -251,10 +288,10 @@ export function loadAllGameAssets(
     trackedLoad(ASSET_URLS.damageZone),
     trackedLoad(ASSET_URLS.jumpGuide),
     trackedLoad(ASSET_URLS.goatIdle),
-    Promise.all(ASSET_URLS.goatRunRight.map(trackedLoad)),
-    Promise.all(ASSET_URLS.goatRunLeft.map(trackedLoad)),
+    Promise.all(ASSET_URLS.goatWalk.map(trackedLoad)),
+    Promise.all(ASSET_URLS.goatRun.map(trackedLoad)),
     Promise.all(ASSET_URLS.goatJump.map(trackedLoad)),
-    Promise.all(ASSET_URLS.goatPunch.map(trackedLoad)),
+    Promise.all(ASSET_URLS.goatAttack.map(trackedLoad)),
     Promise.all(ASSET_URLS.evilMan.map(trackedLoad)),
     Promise.all(ASSET_URLS.evilBird.map(trackedLoad)),
     Promise.all(ASSET_URLS.tree.map(trackedLoad)),
@@ -264,10 +301,10 @@ export function loadAllGameAssets(
       damageZone,
       jumpGuide,
       goatIdle,
-      goatRunRight,
-      goatRunLeft,
+      goatWalk,
+      goatRun,
       goatJump,
-      goatPunch,
+      goatAttack,
       evilMan,
       evilBird,
       tree,
@@ -281,10 +318,10 @@ export function loadAllGameAssets(
         springPadSprite,
         jumpGuide,
         goatIdle,
-        goatRunRight,
-        goatRunLeft,
-        goatJump,
-        goatPunch,
+        goatWalk: bakeSpriteFrames(goatWalk, 256),
+        goatRun: bakeSpriteFrames(goatRun, 256),
+        goatJump: bakeSpriteFrames(goatJump, 384),
+        goatAttack: bakeSpriteFrames(goatAttack, 384),
         evilMan,
         evilBird,
         tree,
